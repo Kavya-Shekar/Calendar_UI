@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head lang="ko">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Flask Web Scheduler</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='jquery-ui/jquery-ui.min.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static',filename='jquery-ui/jquery-ui.structure.min.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static',filename='jquery-ui/jquery-ui.theme.min.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static',filename='fullcalendar/fullcalendar.css') }}" />
+  <style>
+    body {
+      font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    }
+
+  .event_selected {
+    background-color: red;
+  }
+  /*assign full width inputs*/
+  .modalInput{
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+
+        box-sizing: border-box;
+    }
+    
+    /*set a style for the buttons*/
+    .modalButton {
+        background-color: #3363cc;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 6px;
+
+        cursor: pointer;
+        width: 100%;
+    }
+    
+    /* set a hover effect for the button*/
+    button:hover {
+        opacity: 0.8;
+    }
+    
+    /*set extra style for the cancel button*/
+    .cancelbtn {
+        background-color: #f5624f;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 6px;
+
+        cursor: pointer;
+        width: 100%;
+    }
+    
+    /*centre the display image inside the container*/
+    .imgcontainer {
+        text-align: center;
+        margin: 24px 0 12px 0;
+        position: relative;
+    }
+    
+    /*set image properties*/
+    img.avatar {
+        width: 40%;
+        border-radius: 50%;
+    }
+    
+    /*set padding to the container*/
+    .container {
+        padding: 16px;
+    }
+      
+    /*set the forgot password text*/
+    span.psw {
+        float: right;
+        padding-top: 16px;
+    }
+    
+    /*set the Modal background*/
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        border-radius: 6px;
+        height: 100%;
+        /* overflow: auto; */
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0);
+        padding-top: 60px;
+    }
+    
+    /*style the model content box*/
+    .modal-content {
+        color: #ffffff;
+        background-color: rgb(0, 0, 0);
+        margin: 5% auto 15% auto;
+        border: 6px solid rgb(16, 129, 194);
+        border-radius: 6px;
+        width: 30%;
+    }
+    
+    /*style the close button*/
+    .close {
+        position: absolute;
+        right: 25px;
+        top: 0;
+        color: #ffffff;
+        font-size: 35px;
+        font-weight: bold;
+    }
+      
+    .close:hover,
+    .close:focus {
+        color: red;
+        cursor: pointer;
+    }
+    
+    /* add zoom animation*/
+    .animate {
+        -webkit-animation: animatezoom 0.6s;
+        animation: animatezoom 0.6s
+    }
+
+    @-webkit-keyframes animatezoom {
+        from {
+            -webkit-transform: scale(0)
+        }
+        to {
+            -webkit-transform: scale(1)
+        }
+    }
+      
+    @keyframes animatezoom {
+        from {
+            transform: scale(0)
+        }
+        to {
+            transform: scale(1)
+        }
+    }
+
+
+    .animateClose {
+        -webkit-animation: animatezoomout 0.6s;
+        animation: animatezoomout 0.6s
+    }
+
+    @-webkit-keyframes animatezoomout {
+        from {
+            -webkit-transform: scale(1)
+        }
+        to {
+            -webkit-transform: scale(0)
+        }
+    }
+      
+    @keyframes animatezoomout {
+        from {
+            transform: scale(1)
+        }
+        to {
+            transform: scale(0)
+        }
+    }
+      
+      
+    @media screen and (max-width: 300px) {
+        span.psw {
+            display: block;
+            float: none;
+        }
+        .cancelbtn {
+            width: 100%;
+        }
+    }
+    .editCalendar {
+      color: #20bf6b !important;
+      text-transform: uppercase;
+      background: #ffffff;
+      padding: 10px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      margin-top: 10px;
+      border: 4px solid #20bf6b !important;
+      border-radius: 6px;
+      display: inline-block;
+      transition: all 0.3s ease 0s;
+    }
+    .editCalendar:hover {
+      color: #51aac5 !important;
+      border-radius: 50px;
+      border-color: #51aac5 !important;
+      transition: all 0.3s ease 0s;
+    }
+  </style>
+
+  <script src="{{ url_for('static',filename='jquery/jquery.min.js') }}"></script>
+  <script src="{{ url_for('static',filename='moment/moment.min.js') }}"></script>
+  <script src="{{ url_for('static',filename='jquery-ui/jquery-ui.min.js') }}"></script>
+  <script src="{{ url_for('static',filename='moment/moment.min.js') }}"></script>
+  <script src="{{url_for('static',filename='fullcalendar/fullcalendar.js')}}"></script>
+  <script>
+  $(document).ready(function() {
+    $("#calendar").fullCalendar({
+      events : '{{url_for('scheduler')}}',
+      dayClick : function(date){
+          $('#start, #end').datepicker('setDate',date._d);
+          $('.event_selected').removeClass('event_selected');
+          $(this).addClass('event_selected');
+      },
+      eventClick : function(event){
+        $('#id').val(event.id);
+        $('#title').val(event.title);
+        $('#start').val(event.start.toISOString());
+        $('#end').val(event.end == null ? event.start.toISOString() : event.end.toISOString() );
+        $('.event_selected').removeClass('event_selected');
+        $(this).addClass('event_selected');
+     }
+   });
+
+    $('#start, #end').datepicker({
+      dateFormat: "yy-mm-dd",
+      onSelect : function(dateText, inst){
+        if(this.id == 'start'){
+          $('#start').datepicker("getDate").getTime() > $('#end').datepicker("getDate").getTime();
+          $('#end').datepicker("setDate", dateText);
+        }
+      }
+    });
+
+    $('#start, #end').datepicker('setDate',new Date());
+
+    $('#insertBtn').click(function(){
+      $.ajax({
+        url : '{{url_for('scheduler')}}',
+        type : 'POST',
+        data :$('#schedulerForm').serialize(),
+        success : function(res){
+          let data = JSON.parse(res);
+          if(data.rows > 0){
+            $("#calendar").fullCalendar( 'refetchEvents' );
+          }
+          else{
+            alert('failure');
+          }
+        }
+      });
+      // alert($('schedulerForm').serialize())
+      document.getElementById('id01').style.display='none';
+    });
+
+    $('#updateBtn').click(function(){
+      $.ajax({
+        url : '{{url_for('scheduler')}}',
+        type : 'put',
+        data :$('#schedulerForm').serialize(),
+        success : function(res){
+          let data = JSON.parse(res);
+          if(data.rows > 0){
+            $("#calendar").fullCalendar( 'refetchEvents' )
+          }
+          else{
+            alert('failure');
+          }
+        }
+      });
+      document.getElementById('id01').style.display='none';
+
+    });
+
+    $('#deleteBtn').click(function(){
+      if(confirm($('#title').val() + " Are you sure you want to delete the schedule?")){
+        $.ajax({
+          url : '{{url_for('scheduler')}}',
+          type : 'delete',
+          data :{id:$('#id').val()},
+          success : function(res){
+            let data = JSON.parse(res);
+            if(data.rows > 0){
+              $("#calendar").fullCalendar( 'refetchEvents' )
+            }
+            else{
+              alert('failure');
+            }
+          }
+        });
+      }
+      document.getElementById('id01').style.display='none';
+
+    });
+  });
+  </script>
+</head>
+<body>
+  <!-- <form name="schedulerForm" id="schedulerForm">
+    start : <input type="text" name="start" id="start" readonly="readonly">
+    end : <input type="text" name="end" id="end" readonly="readonly">
+    title : <input type="text" name="title" id="title">
+    <input type="hidden" name="id" id="id">
+    <label for="allDay">All day</label>
+    <input type="checkbox" name="allDay" id="allDay" checked="checked" value="Y">
+    <button type="button" id="insertBtn">Schedule registration</button> 
+    <button type="button" id="updateBtn">Schedule modification</button> 
+    <button type="button" id="deleteBtn">Delete schedule</button> 
+  </form> -->
+  <!-- <button onclick="document.getElementById('id01').style.display='block'" class="modalButton">Edit Calendar</button> -->
+  <div class="button_cont" align="left">
+    <a class="editCalendar" onclick="document.getElementById('id01').style.display='block'" target="_blank" rel="nofollow noopener">Edit Calendar</a>
+  </div>
+
+  <div id="calendar"></div>
+  
+    <div id="id01" class="modal">
+        <form class="modal-content animate" name="schedulerForm" id="schedulerForm">
+            <div class="imgcontainer">
+                <span onclick="document.getElementById('id01').style.display='none';" class="close" title="Close Modal">×</span>
+            </div>
+  
+            <div class="container">
+                <label>Start</label>
+                <input type="text" class="modalInput" placeholder="Enter Start Date" name="start"  id="start" readonly="readonly" required>
+  
+                <label>End</label>
+                <input type="text" class="modalInput" placeholder="Enter End Date" name="end" id="end" readonly="readonly" required>
+
+                <label>Title</label>
+                <input type="text" class="modalInput" placeholder="Enter Title" name="title" id="title" required>
+
+                <input type="hidden" name="id" id="id">
+
+                <input type="checkbox" style="color: #ffffff;" name="allDay" id="allDay" checked="checked" value="Y"><label>All Day</label>
+
+
+                <button type="button" class="modalButton" id="insertBtn">Schedule registration</button> <!--Schedule registration-->
+                <button type="button" class="modalButton" id="updateBtn">Schedule modification</button> <!--Schedule modification-->
+                <button type="button" class="cancelbtn" id="deleteBtn">Delete schedule</button> <!--Delete schedule-->
+              </div>
+  
+        </form>
+    </div>
+</body>
+</html>

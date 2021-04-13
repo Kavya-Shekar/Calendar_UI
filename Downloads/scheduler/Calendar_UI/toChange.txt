@@ -1,0 +1,8 @@
+Week, days etc render
+login page
+change comments
+event details modal
+check availablity of user
+modify event
+add invitees email
+
