@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <meta charset='utf-8' />
+    <link href="{{ url_for('static',filename='lib/main.css') }}"  rel='stylesheet' />
+    <script src="{{ url_for('static',filename='lib/main.js') }}"></script>
+    <link href="{{ url_for('static',filename='styles.css') }}" rel="stylesheet"/>
+    <link rel="stylesheet" href="{{ url_for('static',filename='jquery-ui/jquery-ui.min.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static',filename='jquery-ui/jquery-ui.structure.min.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static',filename='jquery-ui/jquery-ui.theme.min.css') }}" />
+  
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+    
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          headerToolbar: {
+            left: 'dayGridMonth,timeGridWeek,timeGridDay',
+            center: 'title',
+            right: 'prevYear,prev,next,nextYear'
+          },
+          selectable: true
+        });
+        calendar.render();
+      });
+    </script>
+
+    <script src="{{ url_for('static',filename='jquery/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='moment/moment.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='jquery-ui/jquery-ui.min.js') }}"></script>
+
+    <script>
+      $(document).ready(function() {
+        // $("#calendar").FullCalendar({
+        //   events : '{{url_for('scheduler')}}',
+        //   // eventClick : function(event){
+        //   //   $('#id').val(event.id);
+        //   //   $('#title').val(event.title);
+        //   //   $('#start').val(event.start.toISOString());
+        //   //   $('#end').val(event.end == null ? event.start.toISOString() : event.end.toISOString() );
+        //   //   $('.event_selected').removeClass('event_selected');
+        //   //   $(this).addClass('event_selected');
+        //   // }
+        // });
+    
+        $('#start, #end').datepicker({
+          dateFormat: "yy-mm-dd",
+          onSelect : function(dateText, inst){
+            if(this.id == 'start'){
+              $('#start').datepicker("getDate").getTime() > $('#end').datepicker("getDate").getTime();
+              $('#end').datepicker("setDate", dateText);
+            }
+          }
+        });
+    
+        $('#start, #end').datepicker('setDate',new Date());
+    
+        $('#insertBtn').click(function(){
+          $.ajax({
+            url : '{{url_for('scheduler')}}',
+            type : 'POST',
+            data :$('#schedulerForm').serialize(),
+            success : function(res){
+              let data = JSON.parse(res);
+              if(data.rows > 0){
+                $("#calendar").fullCalendar( 'refetchEvents' );
+              }
+              else{
+                alert('failure');
+              }
+            }
+          });
+          // alert($('schedulerForm').serialize())
+          document.getElementById('editCalendarModal').style.display='none';
+        });
+    
+        $('#updateBtn').click(function(){
+          $.ajax({
+            url : '{{url_for('scheduler')}}',
+            type : 'put',
+            data :$('#schedulerForm').serialize(),
+            success : function(res){
+              let data = JSON.parse(res);
+              if(data.rows > 0){
+                $("#calendar").fullCalendar( 'refetchEvents' )
+              }
+              else{
+                alert('failure');
+              }
+            }
+          });
+          document.getElementById('editCalendarModal').style.display='none';
+    
+        });
+    
+        $('#deleteBtn').click(function(){
+          if(confirm($('#title').val() + " Are you sure you want to delete the schedule?")){
+            $.ajax({
+              url : '{{url_for('scheduler')}}',
+              type : 'delete',
+              data :{id:$('#id').val()},
+              success : function(res){
+                let data = JSON.parse(res);
+                if(data.rows > 0){
+                  $("#calendar").fullCalendar( 'refetchEvents' )
+                }
+                else{
+                  alert('failure');
+                }
+              }
+            });
+          }
+          document.getElementById('editCalendarModal').style.display='none';
+    
+        });
+      });
+    </script>
+
+  </head>
+
+
+  <body>
+    <div>
+      <div class="button_cont">
+        <a class="editCalendar"  onclick="document.getElementById('editCalendarModal').style.display='block'" target="_blank" rel="nofollow noopener">Edit Calendar</a>
+  
+        <a class="editCalendar"  onclick="document.getElementById('loginModal').style.display='block'" target="_blank" rel="nofollow noopener">Login</a>
+    </div>
+  
+    <div id='calendar'></div>
+
+    <div id="editCalendarModal" class="modal">
+      <form class="modal-content animate" name="schedulerForm" id="schedulerForm">
+          <div class="imgcontainer">
+              <span onclick="document.getElementById('editCalendarModal').style.display='none';" class="close" title="Close Modal">×</span>
+          </div>
+
+          <div class="container">
+            <label>Start</label>
+            <input type="text" class="modalInput" placeholder="Enter Start Date" name="start"  id="start" readonly="readonly" required>
+
+            <label>End</label>
+            <input type="text" class="modalInput" placeholder="Enter End Date" name="end" id="end" readonly="readonly" required>
+
+            <label>Title</label>
+            <input type="text" class="modalInput" placeholder="Enter Title" name="title" id="title" required>
+
+            <input type="hidden" name="id" id="id">
+
+            <input type="checkbox" style="color: #ffffff;" name="allDay" id="allDay" checked="checked" value="Y"><label>All Day</label>
+
+
+            <button type="button" class="modalButton" id="insertBtn">Schedule registration</button> 
+            <button type="button" class="modalButton" id="updateBtn">Schedule modification</button>
+            <button type="button" class="cancelbtn" id="deleteBtn">Delete schedule</button>
+         </div>
+      </form>
+    </div>  
+
+
+  </body>
+</html>
