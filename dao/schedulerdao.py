@@ -3,11 +3,13 @@
 import json
 #python mysql 연결 드라이버
 import pymysql
+import os
 
 #db연결을 담당할 함스
 def getConnection():
-    return pymysql.connect(host='localhost', user='root', password='root',
+    return pymysql.connect(host='localhost', user='prajwal', password='180818',
                            db='mydatabase', charset='utf8')
+
 
 #select한 데이터중 mysql datetime형식의 값을 fullCalendar에서 처리할수 있도록 포멧 변경
 def date_handler(obj):
@@ -44,29 +46,46 @@ def sql_template(type, sql, params=None):
 def getScheduler(searchDate):
     if not parameter_checker(searchDate) :
         return json.dumps({})
-    sql = "select id, title, start, end, if(allDay = %s,true,false) allDay from my_schedule where to_days(start) >= to_days(%s) and to_days(end) <= to_days(%s)"
+    sql = "select id, title, start, end"
     params = ('Y', searchDate['start'], searchDate['end'])
     #처리된 데이터를 json으로 변경 datetime처리를 위해 date_handler지정
     return json.dumps(sql_template(1, sql, params), default=date_handler);
 
 #넘어온 schedule을 등록
 def setScheduler(schedule):
+
     #넘어온 데이터중 빈값이 있으면 0 리턴
     if not parameter_checker(schedule) :
         return json.dumps({'rows' : 0})
     else :
-        sql = "INSERT INTO my_schedule(title, start, end, allDay) VALUES (%s, %s, %s, %s)"
-        params = (schedule['title'], schedule['start'], schedule['end'], schedule['allDay'])
+        json_file = open(os.path.dirname(__file__) + '/../static/loadtest.json', 'r')
+        data = json.load(json_file)
+        id = len(data)+1
+        new_event = {
+            "title": schedule['title'],
+            "start": schedule['start'],
+            "end": schedule['end']
+        }
+        json_file.close()
+        
+        f = open(os.path.dirname(__file__) + '/../static/loadtest.json', 'w')
+        data.append(new_event)
+        json.dump(data, f)
+        f.close()
+
+        sql = "INSERT INTO my_schedule(title, start, end) VALUES (%s, %s, %s)"
+        params = (schedule['title'], schedule['start'], schedule['end'])
         return json.dumps({'rows' : sql_template(3, sql, params)})
 
 # schedule 삭제
-def delScheduler(id):
+def delScheduler(title):
     #넘어온 데이터중 빈값이 있으면 0 리턴
-    if not parameter_checker(id) :
+    if not parameter_checker(title) :
         return json.dumps({'rows' : 0})
     else :
-        sql = "DELETE FROM my_schedule WHERE id = %s"
-        params = (id)
+        
+        sql = "DELETE FROM my_schedule WHERE title = %s"
+        params = (title)
         return json.dumps({'rows' : sql_template(3, sql, params)})
 
 #넘어온 schedule id에 해당하는 schedule을 수정
@@ -75,8 +94,19 @@ def putScheduler(schedule):
     if not parameter_checker(schedule) :
         return json.dumps({'rows' : 0})
     else :
-        sql = "UPDATE my_schedule SET title = %s, start = %s, end = %s, allDay = %s WHERE id = %s"
-        params = (schedule['title'], schedule['start'], schedule['end'], schedule['allDay'], schedule['id'])
+        json_file = open(os.path.dirname(__file__) + '/../static/loadtest.json', 'r')
+        data = json.load(json_file)
+        id = len(data)+1
+        new_event = {
+            "title": schedule['title'],
+            "start": schedule['start'],
+            "end": schedule['end']
+        }
+        json_file.close()
+        
+
+        sql = "UPDATE my_schedule start = %s, end = %s WHERE title = %s"
+        params = (schedule['start'], schedule['end'], schedule['title'])
         return json.dumps({'rows' : sql_template(3, sql, params)})
 
 # parameter 빈값 확인

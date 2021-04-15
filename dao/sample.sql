@@ -7,10 +7,9 @@ CREATE TABLE `my_schedule` (
   `title` varchar(255) NOT NULL,
   `start` datetime NOT NULL,
   `end` datetime NOT NULL,
-  `allDay` char(1) NOT NULL DEFAULT 'Y',
   PRIMARY KEY (`id`)
 );
 
-insert into my_schedule(title, start, end, allDay) values('my schedule', now(), now(), 'Y');
+insert into my_schedule(title, start, end) values('my schedule', now(), now(), 'Y');
 
 commit;

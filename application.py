@@ -22,20 +22,20 @@ def scheduler():
 
     #요청이 post면
     if request.method == 'POST':
+        print(request.form)
         start = request.form['start']
         end = request.form['end']
         title = request.form['title']
-        allDay = request.form['allDay']
 
         # Dictoionary 형식의 schedule 변수를 만든다. 추후 parameter를 받게 수정예정
-        schedule = {'title' : title, 'start' : start, 'end' : end, 'allDay' : allDay}
+        schedule = {'title' : title, 'start' : start, 'end' : end}
         # schedule을 입력한다.
         return  schedulerdao.setScheduler(schedule)
 
     #요청이 delete면
     if request.method == 'DELETE':
-        id = request.form['id']
-        return  schedulerdao.delScheduler(id)
+        title = request.form['title']
+        return  schedulerdao.delScheduler(title)
 
     #요청이 put이면
     if request.method == 'PUT':
