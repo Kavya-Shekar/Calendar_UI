@@ -6601,6 +6601,7 @@ var FullCalendar = (function (exports) {
                 }
                 else {
                     failureCallback('Failure parsing JSON', xhr);
+                    console.log(xhr.responseText);
                 }
             }
             else {

@@ -3,6 +3,8 @@
 <html lang='en'>
   <head>
     <meta charset='utf-8' />
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Expires" content="-1">
     <link href="{{ url_for('static',filename='lib/main.css') }}"  rel='stylesheet' />
     <script src="{{ url_for('static',filename='lib/main.js') }}"></script>
     <link href="{{ url_for('static',filename='styles.css') }}" rel="stylesheet"/>
@@ -14,43 +16,58 @@
     <script src="{{ url_for('static',filename='moment/moment.min.js') }}"></script>
     <script src="{{ url_for('static',filename='jquery-ui/jquery-ui.min.js') }}"></script>
 
+    <!-- pluggins for datetime picker -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.css" />    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.css" />
     
     <script>
 
       	document.addEventListener('DOMContentLoaded', function() 
       	{
-			var calendarEl = document.getElementById('calendar');
-		
-			var calendar = new FullCalendar.Calendar(calendarEl, {
-				initialView: 'dayGridMonth',
-				headerToolbar: {
-				left: 'dayGridMonth,timeGridWeek,timeGridDay',
-				center: 'title',
-				right: 'addEventButton,prevYear,prev,next,nextYear'
+          var calendarEl = document.getElementById('calendar');
+      
+          var calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          nowIndicator: true,
+          selectable: true,
+          headerToolbar: {
+          left: 'dayGridMonth,timeGridWeek,timeGridDay',
+          center: 'title',
+          right: 'addEventButton,prevYear,prev,next,nextYear'
 				},
 
 				dateClick: function(info) {
 					calendar.changeView('listDay', info.dateStr);
-				},
+        },
+
+        eventClick: function(info) {
+          document.getElementById("eventTitle").innerHTML = info.event.title;
+          document.getElementById("newTitle").value=info.event.title;
+          document.getElementById("eventStartDate").innerHTML = info.event.start;
+          document.getElementById("eventEndDate").innerHTML = info.event.end;
+          document.getElementById("eventModal").style.display = "block";
+
+        },
 
         contentHeight: 600,
         
         eventSources: [
           {
-                  // Adele H 
-                  url: "{{ url_for('static',filename='loadtest.json')}}",
-                  type: 'GET', 
-                  error: function() {
-                      alert('there was an error while fetching events!');
-                  }
+              url: "{{ url_for('static',filename='loadtest.json')}}",
+              type: 'GET', 
+              error: function() {
+                  alert('there was an error while fetching events!');
               }
-              // {
-              //   url: "https://calendar.google.com/calendar/ical/en.indian%23holiday%40group.v.calendar.google.com/public/basic.ics",
-              //   type: 'GET',
-              //     color: 'green',   // a non-ajax option
-              //     textColor: 'black' // a non-ajax option
-              // }
-            ],
+          }
+        ],
+
+        googleCalendarApiKey: 'AIzaSyDcnW6WejpTOCffshGDDb4neIrXVUA1EAE',
+        events: 'en.indian#holiday@group.v.calendar.google.com',
+
 				customButtons: {
 
 					addEventButton: {
@@ -62,54 +79,97 @@
 				}
 			});
         
-			calendar.render();
+      calendar.render();
+
+      // refetchOnClick: function(){
+      //   calendar.refetchEvents();
+      // };
+
+
+
+      (function ($) {
+    $.fn.serialize = function (options) {
+        return $.param(this.serializeArray(options));
+    };
+
+    $.fn.serializeArray = function (options) {
+        var o = $.extend({
+            checkboxesAsBools: false
+        }, options || {});
+
+        var rselectTextarea = /select|textarea/i;
+        var rinput = /text|hidden|password|search|number/i;
+
+        return this.map(function () {
+            return this.elements ? $.makeArray(this.elements) : this;
+        })
+        .filter(function () {
+            return this.name && !this.disabled &&
+                (this.checked
+                || (o.checkboxesAsBools && this.type === 'checkbox')
+                || rselectTextarea.test(this.nodeName)
+                || rinput.test(this.type));
+            })
+            .map(function (i, elem) {
+                var val = $(this).val();
+                return val == null ?
+                null :
+                $.isArray(val) ?
+                $.map(val, function (val, i) {
+                    return { name: elem.name, value: val };
+                }) :
+                {
+                    name: elem.name,
+                    value: (o.checkboxesAsBools && this.type === 'checkbox') ?
+                        (this.checked ? true : false) :
+                        val
+                };
+            }).get();
+          };
+      })(jQuery);
+
+
 			
 		$('#insertBtn').click(function(){
 
 			var start_date = new Date($("#start").val() + 'T00:00:00');
-			var end_date = new Date($("#end").val() + 'T00:00:00');
-			var title=$("#title").val();
+			var end_date = new Date($("#end").val() + 'T23:59:59');
+      var title = $("#title").val();
+      // alert(title);
 
-			if (!isNaN(start_date.valueOf()) && !isNaN(end_date.valueOf())) { // valid?
-				calendar.addEvent({
-					title: title,
-					start: start_date,
-					end: end_date,
-				});
-			} 
-			else {
-				alert('Invalid date.');
-			}
+			// if (!isNaN(start_date.valueOf()) && !isNaN(end_date.valueOf())) { // valid?
+			// 	calendar.addEvent({
+			// 		title: title,
+			// 		start: start_date,
+			// 		end: end_date,
+			// 	});
+			// } 
+			// else {
+			// 	alert('Invalid date.');
+			// }
 					
 			$.ajax({
 				url : '{{url_for('scheduler')}}',
 				type : 'POST',
-				data :$('#schedulerForm').serialize(),
+				data :$('#schedulerForm').serialize({
+          checkboxesAsBools: true
+        }),
 				success : function(res){
-				alert('Event successfully added!');
+          alert('Event successfully added!');
 				}
 			});
-			
-			document.getElementById('editCalendarModal').style.display='none';
-			});
+
+      document.getElementById('editCalendarModal').style.display='none';
+
+    });
 
 	  });
 	  
-      $(document).ready(function() {
-        // $("#calendar").FullCalendar({
-        //   events : '{{url_for('scheduler')}}',
-        //   // eventClick : function(event){
-        //   //   $('#id').val(event.id);
-        //   //   $('#title').val(event.title);
-        //   //   $('#start').val(event.start.toISOString());
-        //   //   $('#end').val(event.end == null ? event.start.toISOString() : event.end.toISOString() );
-        //   //   $('.event_selected').removeClass('event_selected');
-        //   //   $(this).addClass('event_selected');
-        //   // }
-        // });
-    
-        $('#start, #end').datepicker({
-          dateFormat: "yy-mm-dd",
+      $(document).ready(function() {    
+        
+        $('#start, #end').datetimepicker({
+          dateFormat: "yy-mm-dd", 
+          timeFormat: "HH:mm:ss",
           onSelect : function(dateText, inst){
             if(this.id == 'start'){
               $('#start').datepicker("getDate").getTime() > $('#end').datepicker("getDate").getTime();
@@ -118,47 +178,46 @@
           }
         });
     
-        $('#start, #end').datepicker('setDate',new Date());
+        $('#start, #end').datetimepicker('setDate',new Date());
+
+        $('#newStart, #newEnd').datetimepicker({
+          dateFormat: "yy-mm-dd", 
+          timeFormat: "HH:mm:ss",
+          onSelect : function(dateText, inst){
+            if(this.id == 'start'){
+              $('#newStart').datepicker("getDate").getTime() > $('#newEnd').datepicker("getDate").getTime();
+              $('#newEnd').datepicker("setDate", dateText);
+            }
+          }
+        });
     
-        $('#updateBtn').click(function(){
+        $('#newStart, #newEnd').datetimepicker('setDate',new Date());
+    
+        $('#finalUpdateBtn').click(function(){
           $.ajax({
             url : '{{url_for('scheduler')}}',
             type : 'put',
-            data :$('#schedulerForm').serialize(),
+            data :$('#eventModifyModal').serialize({
+              checkboxesAsBools: true
+            }),
             success : function(res){
-              let data = JSON.parse(res);
-              alert(data);
-              if(data.rows > 0){
-                $("#calendar").fullCalendar( 'refetchEvents' )
-              }
-              else{
-                alert('failure');
-              }
             }
           });
-          document.getElementById('editCalendarModal').style.display='none';
-    
+          location.reload(true);
         });
-    
-        $('#deleteBtn').click(function(){
-          if(confirm($('#title').val() + " Are you sure you want to delete the schedule?")){
-            $.ajax({
-              url : '{{url_for('scheduler')}}',
-              type : 'delete',
-              data :{id:$('#id').val()},
-              success : function(res){
-                let data = JSON.parse(res);
-                if(data.rows > 0){
-                  $("#calendar").fullCalendar( 'refetchEvents' )
-                }
-                else{
-                  alert('failure');
-                }
-              }
-            });
-          }
-          document.getElementById('editCalendarModal').style.display='none';
-    
+
+        $('#deleteBtn').click(function() {          
+          $.ajax({
+            url : '{{url_for('scheduler')}}',
+            type : 'delete',
+            data : {title: document.getElementById("eventTitle").innerHTML},
+            success : function(res){
+              alert('Event successfully deleted');
+            }
+          });
+          
+          document.getElementById('eventModal').style.display='none';
+          location.reload(true);
         });
 	  });
 	  
@@ -180,7 +239,7 @@
     <div id="editCalendarModal" class="modal">
       <form class="modal-content animate" name="schedulerForm" id="schedulerForm">
           <div class="imgcontainer">
-              <span onclick="document.getElementById('editCalendarModal').style.display='none';" class="close" title="Close Modal">×</span>
+              <span onclick="document.getElementById('editCalendarModal').style.display='none';document.getElementById('eventModifyModal').style.display='none';" class="close" title="Close Modal">×</span>
           </div>
 
           <div class="container">
@@ -193,17 +252,71 @@
             <label>Title</label>
             <input type="text" class="modalInput" placeholder="Enter Title" name="title" id="title" required>
 
-            <input type="hidden" name="id" id="id">
+            <!-- <input type="hidden" name="id" id="id"> -->
 
-            <!-- <input type="checkbox" style="color: #ffffff;" name="allDay" id="allDay" checked="checked" value="Y"><label>All Day</label> -->
 
 
             <button type="button" class="modalButton" id="insertBtn">Schedule registration</button> 
-            <button type="button" class="modalButton" id="updateBtn">Schedule modification</button>
-            <button type="button" class="cancelbtn" id="deleteBtn">Delete schedule</button>
+            <!-- <button type="button" class="modalButton" id="updateBtn">Schedule modification</button>
+            <button type="button" class="cancelbtn" id="deleteBtn">Delete schedule</button> -->
          </div>
       </form>
     </div>  
+
+
+    <div id="eventModal" class="modal">
+      <div class="modal-content animate">
+        <div class="imgcontainer">
+          <span onclick="document.getElementById('eventModal').style.display='none'; document.getElementById('eventModifyModal').style.display='none';" class="close" title="Close Modal">×</span>
+        </div>
+        <div class="container">
+          <div id="selectedEventDetails">
+            <br>
+            <fieldset>
+              <legend>Event name</legend>
+              <div id="eventTitle">
+              </div>
+            </fieldset>
+  
+
+            <fieldset>
+              <legend>Start</legend>
+              <div id="eventStartDate">
+              </div>
+            </fieldset>
+  
+
+            <fieldset>
+              <legend>End</legend>
+              <div id="eventEndDate">
+              </div>
+            </fieldset>
+            
+          </div>
+          <button type="button" class="modalButton" id="updateBtn" onclick="document.getElementById('eventModifyModal').style.display='block'; this.disabled=true;">Schedule modification</button>
+
+          
+          <form class="container" id="eventModifyModal" style="display: none;">
+
+            <label>Title</label>
+            <input type="text" class="modalInput"  name="newTitle" id="newTitle" readonly="readonly">
+
+
+            <label>Start</label>
+            <input type="text" class="modalInput" placeholder="Enter Start Date" name="newStart"  id="newStart" readonly="readonly" required>
+
+            <label>End</label>
+            <input type="text" class="modalInput" placeholder="Enter End Date" name="newEnd" id="newEnd" readonly="readonly" required>
+            <button type="button" class="modalButton" id="finalUpdateBtn" onclick="document.getElementById('eventModal').style.display='none';document.getElementById('eventModifyModal').style.display='none'; document.getElementById('updateBtn').disabled=false;">Modification</button>
+
+          </form>
+          
+          
+          <button type="button" class="cancelbtn" id="deleteBtn">Delete schedule</button>
+        </div>
+      </div>
+    </div>
+    
 
 
   </body>
