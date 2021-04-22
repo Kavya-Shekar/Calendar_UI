@@ -2,6 +2,9 @@
 import json
 import pymysql
 import os
+from email.message import EmailMessage
+import smtplib
+  
 
 def getConnection():
     return pymysql.connect(host='localhost', user='prajwal', password='180818',
@@ -48,10 +51,14 @@ def getScheduler(searchDate):
 
 
 def setScheduler(schedule):
-
+    print('Functoin called')
     if not parameter_checker(schedule) :
+        print('Found the error')
         return json.dumps({'rows' : 0})
+
     else :
+
+        print('Stuck with the error')
         json_file = open(os.path.dirname(__file__) + '/../static/loadtest.json', 'r')
         data = json.load(json_file)
         
@@ -67,6 +74,27 @@ def setScheduler(schedule):
         data.append(new_event)
         json.dump(data, f)
         f.close()
+        print('Added event to database')
+
+        # invitees = schedule['invitees']
+        # if invitees != '':
+        #     invitees = invitees.split(";")            
+            
+        #     s = smtplib.SMTP_SSL('smtp.gmail.com')
+        #     s.login("ooadcalendartest@gmail.com", "ooadcool")
+            
+        #     msg = EmailMessage()
+        #     msg['Subject'] = f'Event invitation'
+        #     msg['To'] = ', '.join(invitees)
+        #     msg['From'] = "ooadcalendartest@gmail.com"
+        #     mail_body = r"You have been invited to {} at {}".format( schedule["title"], schedule["start"])
+        #     msg.set_content(mail_body)
+        #     s.send_message(msg)
+        #     print('Send mail!')
+
+        #     s.quit()
+
+
 
         sql = "INSERT INTO my_schedule(title, start, end) VALUES (%s, %s, %s)"
         params = (schedule['title'], schedule['start'], schedule['end'])
@@ -120,7 +148,8 @@ def putScheduler(schedule):
         return json.dumps({'rows' : sql_template(3, sql, params)})
 
 def parameter_checker(params):
-    
+    return True
+
     if not bool(params):
         return False
         

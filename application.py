@@ -8,7 +8,6 @@ app = Flask(__name__)
 def index():
     return render_template("trialCalendar.html")
 
-
 @app.route("/scheduler",methods=["GET","POST","PUT","DELETE"])
 def scheduler():
     
@@ -23,8 +22,9 @@ def scheduler():
         print("request form", request.form)
         start = request.form['start']
         end = request.form['end']
-        title = request.form['title']
-        schedule = {'title' : title, 'start' : start, 'end' : end}
+        title = request.form['title']        
+        invitees = request.form['invitees']
+        schedule = {'title' : title, 'start' : start, 'end' : end, 'invitees' : invitees}
         return  schedulerdao.setScheduler(schedule)
 
     #DELETE method to remove events from the database 

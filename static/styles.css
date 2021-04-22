@@ -1,3 +1,9 @@
+.modal-body{
+    overflow-y: auto;
+}
+
+
+
 body {
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   }
@@ -82,10 +88,11 @@ body {
       width: 100%;
       border-radius: 6px;
       height: 100%;
-      /* overflow: auto; */
+      overflow: auto;
       background-color: rgb(0, 0, 0);
       background-color: rgba(0, 0, 0, 0);
-      padding-top: 60px;
+      padding-top: 0px;
+      margin-top: 0px;
   }
   
   /*style the model content box*/

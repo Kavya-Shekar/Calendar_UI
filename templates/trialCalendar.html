@@ -65,8 +65,8 @@
           }
         ],
 
-        googleCalendarApiKey: 'AIzaSyDcnW6WejpTOCffshGDDb4neIrXVUA1EAE',
-        events: 'en.indian#holiday@group.v.calendar.google.com',
+        // googleCalendarApiKey: 'AIzaSyDcnW6WejpTOCffshGDDb4neIrXVUA1EAE',
+        // events: 'en.indian#holiday@group.v.calendar.google.com',
 
 				customButtons: {
 
@@ -242,7 +242,7 @@
               <span onclick="document.getElementById('editCalendarModal').style.display='none';document.getElementById('eventModifyModal').style.display='none';" class="close" title="Close Modal">×</span>
           </div>
 
-          <div class="container">
+          <div class="container modal-body">
             <label>Start</label>
             <input type="text" class="modalInput" placeholder="Enter Start Date" name="start"  id="start" readonly="readonly" required>
 
@@ -251,6 +251,10 @@
 
             <label>Title</label>
             <input type="text" class="modalInput" placeholder="Enter Title" name="title" id="title" required>
+
+            <label>Add Invitees Separated by ";"</label>
+            <input type="text" class="modalInput" placeholder="Add Invitees" name="invitees" id="invitees">
+
 
             <!-- <input type="hidden" name="id" id="id"> -->
 
@@ -269,7 +273,7 @@
         <div class="imgcontainer">
           <span onclick="document.getElementById('eventModal').style.display='none'; document.getElementById('eventModifyModal').style.display='none';" class="close" title="Close Modal">×</span>
         </div>
-        <div class="container">
+        <div class="container modal-body">
           <div id="selectedEventDetails">
             <br>
             <fieldset>
@@ -307,7 +311,12 @@
 
             <label>End</label>
             <input type="text" class="modalInput" placeholder="Enter End Date" name="newEnd" id="newEnd" readonly="readonly" required>
+
+
+
             <button type="button" class="modalButton" id="finalUpdateBtn" onclick="document.getElementById('eventModal').style.display='none';document.getElementById('eventModifyModal').style.display='none'; document.getElementById('updateBtn').disabled=false;">Modification</button>
+
+
 
           </form>
           
